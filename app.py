@@ -14,8 +14,17 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 sys.path.append("..") # Adds higher directory to python modules path.
 
-input_path = './test_images'
+input_path = './uploads/cats'
 img2vec = Img2Vec()
+pics = {}
+
+@app.before_first_request
+def create_file_dict():
+    for file in os.listdir(input_path):
+        filename = os.fsdecode(file)
+        img = Image.open(os.path.join(input_path, filename))
+        vec = img2vec.get_vec(img)
+        pics[filename] = vec
 
 def get_image_vector(filename):
     pil_image = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
