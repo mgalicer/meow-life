@@ -1,8 +1,7 @@
 import sys
 import os
-import csv
 import pickle
-from flask import Flask, flash, request, redirect, url_for
+from flask import Flask, flash, request, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 from img_to_vec import Img2Vec
 from PIL import Image
@@ -20,28 +19,17 @@ input_path = './uploads/cats'
 img2vec = Img2Vec()
 pics = {}
 
-def create_pickle():
-    with open('vectors.pkl', 'wb') as output:
-        for file in os.listdir(input_path):
-            filename = os.fsdecode(file)
-            img = Image.open(os.path.join(input_path, filename))
-            vec = img2vec.get_vec(img)
-
-
-def create_csv():
-    with open('vectors.csv', 'w') as csvfile:
-        filewriter = csv.writer(csvfile, delimiter=',')
-        for file in os.listdir(input_path):
-            filename = os.fsdecode(file)
-            img = Image.open(os.path.join(input_path, filename))
-            vec = img2vec.get_vec(img)
-            print(vec)
-            filewriter.writerow([filename, vec])
+def load_file_dict():    
+    infile = open('vectors.pkl', 'rb')
+    image_dict = pickle.load(infile)
+    infile.close()
+    return image_dict
 
 def create_file_dict():
     with open('vectors.pkl', 'wb') as output:
         i = 0;
         for file in os.listdir(input_path):
+            i = i + 1
             print(i)
             filename = os.fsdecode(file)
             img = Image.open(os.path.join(input_path, filename))
@@ -82,8 +70,9 @@ def classify():
         # Do the part where we pass the file to the model
         image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         user_image = get_image_vector(filename)
-        return find_similar_cat(user_image)
+        file_name = find_similar_cat(user_image)
+        return send_file(input_path + '/'+ file_name)
 
 if __name__ == "__main__":
-    create_file_dict()
+    pics = load_file_dict()
     app.run()
