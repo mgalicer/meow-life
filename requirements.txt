@@ -1,4 +1,0 @@
-flask
-pytorch
-Pillow
-scikit-learn
