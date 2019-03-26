@@ -25,13 +25,9 @@
 
 .Photo {
   max-height: 200px;
+  display: inline-flex;
 }
 
-.photos {
-  display: flex;
-  justify-content: space-between;
-  /*max-width: 50%;*/
-}
 
 @keyframes App-logo-spin {
   from {
