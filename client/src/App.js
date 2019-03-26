@@ -2,12 +2,37 @@ import React, { Component } from 'react';
 import './App.css';
 
 class App extends Component {
+  constructor() {
+    super()
+    const defaultPhoto = require('./meow.jpg');
+    this.classifyPhoto = this.classifyPhoto.bind(this);
+    this.state = {
+      personPhoto: defaultPhoto,
+      catPhoto: defaultPhoto
+    }
+  }
+
+  classifyPhoto(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('http://127.0.0.1:5000/classify', {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors'
+    })
+    .then(response => {
+      console.log(response)
+      this.setState({ catPhoto: response.body })
+    }) 
+  }
 
   render() {
     return (
       <div className="App">
         <h2>Meow Life</h2>
-        <UploadPhoto/>
+        <UploadPhoto classifyPhoto={this.classifyPhoto}/>
+        <Photo src={this.state.catPhoto} />
       </div>
     );
   }
@@ -30,9 +55,10 @@ class UploadPhoto extends Component {
     let fileReader = new FileReader()
 
     fileReader.onload = (e) => {
-      localStorage.setItem(file.name, fileReader.result)
-      let localFile = localStorage.getItem(file.name)
-      this.setState({photo: localFile})
+      localStorage.setItem(file.name, fileReader.result);
+      let localFile = localStorage.getItem(file.name);
+      this.setState({photo: localFile});
+      this.props.classifyPhoto(localFile);
     };
 
     fileReader.readAsDataURL(file);
@@ -40,12 +66,11 @@ class UploadPhoto extends Component {
 
   render() {
     return (
-      <form onSubmit={(e) => this.handleSubmit(e)}>
+      <form>
         <label>
           <Photo src={this.state.photo}/>
-          <input type="file" ref={this.fileInput}/>
+          <input type="file" ref={this.fileInput} onChange={(e) => this.handleSubmit(e)}/>
         </label>
-        <button type="submit">Submit</button>
       </form>
     );
   }
